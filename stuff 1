@@ -1,0 +1,50 @@
+#!/usr/bin/perl -w
+# A simple program to read through fasta one record at time
+
+use strict;
+use warnings;
+
+# Change record separator to newline followed by ">"
+# This allows us to process on fasta record at a time
+# Always use local when changing a global variable!
+
+MAIN:{
+
+    # File opening
+    die "\n\n\tUsage: $prName Input_File Output_File\n\n" unless $ARGV[1];
+    if(@ARGV > 0){   
+      open (LIST1, $ARGV[0]) or die "\n\n\tImpossible to open the file $ARGV[0] for reading\n\n";
+      if(@ARGV == 2){
+        open (OUT, ">$ARGV[1]") or die "\n\n\tImpossible to open the file $ARGV[1] for writing\n\n";
+      }else{
+        open (OUT, ">&STDOUT") or die "\n\n\tImpossible to open standard out for writing\n\n";
+      }
+    }else{
+      open (LIST1, "<&STDIN") or die "\n\n\tImpossible to open standard in for reading\n\n";
+      open (OUT, ">&STDOUT") or die "\n\n\tImpossible to open standard out for writing\n\n";
+    }
+   open (STDERR, ">$prName.log") or die "\n\n\tImpossible to open the log file.\n\n";	
+	local $/ = "\n>";
+
+    while (<LIST1>) {
+	      chomp;
+	
+	      # strip ">" from records #
+	      s/>//;
+     
+	      # split record into header field and sequence fields
+	      my ($header, @seq) = split(/\n/);
+    
+	      # stuff sequence list into a string
+	      my $seq = join("",@seq);
+
+	      # put newlines back into sequence #
+	      $seq =~ s/(.{1,47})/$1\n/g;
+
+	      print OUT "$header\t";
+	      print OUT "$seq\n";
+              }
+    close LIST1;
+	close OUT;
+      }
+__END__
